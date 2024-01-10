@@ -38,6 +38,23 @@ void inputPoint(long long x, long long y, ostream& fileToWritePointsIn) {
     points.push_back(point);
 }
 
+void setNameToLine(long long index, const string& _name) {
+    if (index < lines.size())
+    {
+        lines[index].name = _name;
+    }
+
+    else
+        std::cout << "This is an invalid ID, no such line exists!" << std::endl;
+}
+
+void setNameToPoint(long long index, const string& _name) {
+    if (index < points.size())
+        points[index].name = _name;
+
+    else
+        std::cout << "This is an invalid ID, no such point exists!" << std::endl;
+}
 
 int main()
 {
