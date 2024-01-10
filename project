@@ -1,0 +1,20 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+using namespace std;
+
+const int MAX = 1000000;
+
+struct Line {
+    long long a;
+    long long b;
+    string name;
+
+    Line(long long _a, long long _b, string name = "") : a(_a), b(_b), name(name) {}
+};
+
+int main()
+{
+
+}
