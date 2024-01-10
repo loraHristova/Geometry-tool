@@ -14,6 +14,16 @@ struct Line {
     Line(long long _a, long long _b, string name = "") : a(_a), b(_b), name(name) {}
 };
 
+struct Point {
+    long long x;
+    long long y;
+    string name;
+
+    Point(long long _x, long long _y, string _name = "") : x(_x), y(_y), name(_name) {}
+};
+
+
+
 int main()
 {
 
