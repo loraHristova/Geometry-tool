@@ -23,6 +23,21 @@ struct Point {
 };
 
 
+vector<Line> lines(MAX);
+vector<Point> points(MAX);
+
+void inputLine(long long a, long long b, ostream& fileToWriteLinesIn) {
+    fileToWriteLinesIn << a << "x" << "+" << b << "= y" << "\n";
+    Line line(a, b);
+    lines.push_back(line);
+}
+
+void inputPoint(long long x, long long y, ostream& fileToWritePointsIn) {
+    fileToWritePointsIn << "(" << x << "," << y << ")" << "\n";
+    Point point(x, y);
+    points.push_back(point);
+}
+
 
 int main()
 {
