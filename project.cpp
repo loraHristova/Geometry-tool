@@ -32,22 +32,26 @@ long long actualSizeLines = 0;
 vector<Point> points(MAX);
 long long actualSizePoints = 0;
 
-void inputLine(long long a, long long b, ostream& fileToWriteLinesIn) {
+void inputLine(long long a, long long b) {
     //fileToWriteLinesIn << actualSizeLines << " " << a << " " << b << "\n";
     //fileToWriteLinesIn.flush();
     Line line(a, b);
     lines[actualSizeLines] = (line);
     actualSizeLines++;
     lines[actualSizeLines - 1].id = actualSizeLines - 1;
+
+    std::cout << endl << "Your line " << "y = " << a << "x + " << b << " has been created successfully!" << endl << "ID of line: " << actualSizeLines - 1 << endl;
 }
 
-void inputPoint(long long x, long long y, ostream& fileToWritePointsIn) {
+void inputPoint(long long x, long long y) {
     //fileToWritePointsIn << actualSizePoints << x << y << "\n";
     //fileToWritePointsIn.flush();
     Point point(x, y);
     points[actualSizePoints] = point;
     actualSizePoints++;
     points[actualSizePoints - 1].id = actualSizePoints - 1;
+
+    std::cout << endl << "Your point " << "(" << x << " , " << y << ") has been created successfully!" << endl << "ID of point: " << actualSizePoints - 1 << endl;
 }
 
 void setNameToLine(long long index, const string& _name) {
@@ -109,7 +113,49 @@ void savePointsToFile(ofstream& fileToWritePointsIn) {
 }
 
 bool isPointOnLine(int idOfPoint, int idOfLine) {
+    if (idOfPoint >= actualSizePoints) {
+        std::cout << endl << "No such ID of point!" << endl;
+        return false;
+    }
+    if (idOfLine >= actualSizeLines) {
+        std::cout << endl << "No such ID of line!" << endl;
+        return false;
+    }
+
     return ((lines[idOfLine].a * points[idOfPoint].x) + lines[idOfLine].b) == points[idOfPoint].y;
+}
+
+bool createLine(int idOfLinePar, int idOfPointThrough, ofstream& fileToWriteLinesIn) {
+    if (idOfPointThrough >= actualSizePoints) {
+        std::cout << endl << "No such ID of point!" << endl;
+        return false;
+    }
+    if (idOfLinePar >= actualSizeLines) {
+        std::cout << endl << "No such ID of line!" << endl;
+        return false;
+    }
+
+    int coefOfLine = lines[idOfLinePar].a;
+    int bOfLine = ((-1) * coefOfLine) * (points[idOfPointThrough].x) + points[idOfPointThrough].y;
+
+    bool toSaveIt;
+    std::cout << endl << "The line parallel to the line with id: " << idOfLinePar << " and going through point with id: " << idOfPointThrough << " is: y = " << coefOfLine << "x +" << bOfLine << endl << "Do you wish to save this line? (1 for 'yes / 0 for 'no')";
+    
+    std::cin >> toSaveIt;
+
+    while (toSaveIt != 0 && toSaveIt != 1) {
+        std::cout << endl << "Unvalid answer, please enter 1 if you want to save this line or 0 if you don't want to save it: ";
+        std:cin >> toSaveIt;
+    }
+
+    if (toSaveIt) {
+        inputLine(coefOfLine, bOfLine);
+    }
+    else {
+        std::cout << endl << "The line has not been saved!" << endl;
+    }
+
+    return true;
 }
 
 void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
@@ -122,6 +168,8 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
             "Enter a point with coordinates x and y: (x, y). (p)," << endl <<
             "Name a created line. (nl)," << endl <<
             "Name a created point. (np)," << endl <<
+            "Check if point is on line. (cp)" << endl <<
+            "Find parallel line to another line and going through a point. (par)" << endl <<
             "Enter 0 to terminate program," << endl <<
             "Enter your choice: ";
         std::cin >> answer;
@@ -136,8 +184,8 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
                 std::cin >> a >> b;
             }
 
-            inputLine(a, b, fileToWriteLinesIn);
-            std::cout << endl << "Your line " << "y = " << a << "x + " << b << " has been created successfully!" << endl << "ID of line: " << actualSizeLines - 1 << endl;
+            inputLine(a, b);
+            
         }
         else if (answer == "p") {
             std::cout << endl << "Please enter coordinates x and y: ";
@@ -150,8 +198,8 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
                 std::cin >> x >> y;
             }
 
-            inputPoint(x, y, fileToWritePointsIn);
-            std::cout << endl << "Your point " << "(" << x << " , " << y << ") has been created successfully!" << endl << "ID of point: " << actualSizePoints - 1 << endl;
+            inputPoint(x, y);
+            
         }
 
         else if (answer == "nl") {
@@ -187,11 +235,35 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
 
             setNameToPoint(ID, namePoint);
         }
+
+        else if (answer == "cp") {
+            std::cout << endl << "Please enter the id of the point and id of line: ";
+            
+            long long idP, idL;
+            std::cin >> idP >> idL;
+
+            if (isPointOnLine(idP, idL)) {
+                std::cout << endl << "The point (" << points[idP].x << ", " << points[idP].y << ") is on the line: y = " << lines[idL].a << "x + " << lines[idL].b << endl;
+            }
+            else
+                std::cout << endl << "The point (" << points[idP].x << ", " << points[idP].y << ") is NOT on the line: y = " << lines[idL].a << "x + " << lines[idL].b << endl;
+        }
+
+        else if (answer == "par") {
+            std::cout << endl <<  "enter the ids of the line to be parallel to and the point to go through: ";
+
+            long long idP, idL;
+            std::cin >> idL >> idP;
+
+            createLine(idL, idP, fileToWriteLinesIn);
+        }
+
         else if (answer == "0") {
             toBeStopped = true;
             saveLinesToFile(fileToWriteLinesIn);
             savePointsToFile(fileToWritePointsIn);
         }
+       
         else
             std::cout << "Unvalid operation!" << endl;
     }
