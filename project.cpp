@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -107,6 +108,10 @@ void savePointsToFile(ofstream& fileToWritePointsIn) {
     }
 }
 
+bool isPointOnLine(int idOfPoint, int idOfLine) {
+    return ((lines[idOfLine].a * points[idOfPoint].x) + lines[idOfLine].b) == points[idOfPoint].y;
+}
+
 void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
     bool toBeStopped = false;
     string answer;
@@ -209,3 +214,4 @@ int main()
     MyFileLines.close();
     MyFilePoints.close();
 }
+
