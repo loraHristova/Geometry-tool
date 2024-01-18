@@ -6,25 +6,27 @@
 using namespace std;
 
 const int MAX = 1000000;
+const double DOUBLE_MAX = 1.7976931348623157E+308;
+const double DOUBLE_MIN = -1.7976931348623157E+308;
 
 struct Line {
-    long long a;
-    long long b;
+    double a;
+    double b;
     long long id;
     string name;
 
     Line() : Line(0, 0) {}
-    Line(long long _a, long long _b, string name = "-") : a(_a), b(_b), name(name) {}
+    Line(double _a, double _b, string name = "-") : a(_a), b(_b), name(name) {}
 };
 
 struct Point {
-    long long x;
-    long long y;
+    double x;
+    double y;
     string name;
     long long id;
 
     Point() : Point(0, 0) {}
-    Point(long long _x, long long _y, string _name = "-") : x(_x), y(_y), name(_name) {}
+    Point(double _x, double _y, string _name = "-") : x(_x), y(_y), name(_name) {}
 };
 
 vector<Line> lines(MAX);
@@ -32,7 +34,7 @@ long long actualSizeLines = 0;
 vector<Point> points(MAX);
 long long actualSizePoints = 0;
 
-void inputLine(long long a, long long b) {
+void inputLine(double a, double b) {
     //fileToWriteLinesIn << actualSizeLines << " " << a << " " << b << "\n";
     //fileToWriteLinesIn.flush();
     Line line(a, b);
@@ -43,7 +45,7 @@ void inputLine(long long a, long long b) {
     std::cout << endl << "Your line " << "y = " << a << "x + " << b << " has been created successfully!" << endl << "ID of line: " << actualSizeLines - 1 << endl;
 }
 
-void inputPoint(long long x, long long y) {
+void inputPoint(double x, double y) {
     //fileToWritePointsIn << actualSizePoints << x << y << "\n";
     //fileToWritePointsIn.flush();
     Point point(x, y);
@@ -75,8 +77,8 @@ void setNameToPoint(long long index, const string& _name) {
         std::cout << endl << "This is an invalid ID, no such point exists!" << std::endl;
 }
 
-bool verifyInputData(long long a, long long b) {
-    return (a <= LLONG_MIN || a >= LLONG_MAX) ||  (b >= LLONG_MAX || b <= LLONG_MIN);
+bool verifyInputData(double a, double b) {
+    return (a <= DOUBLE_MIN || a >= DOUBLE_MAX) ||  (b >= DOUBLE_MAX || b <= DOUBLE_MIN);
 } 
 
 bool isAnArabicNumber(char ch) {
@@ -84,7 +86,25 @@ bool isAnArabicNumber(char ch) {
 }
 
 bool isLatinLetter(char ch) {
-    return (ch >= 'a' & ch <= 'z') || (ch >= 'A' & ch <= 'Z');
+    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+}
+
+bool isValidIdLine(long long idLine) {
+    if (idLine >= actualSizeLines) {
+        std::cout << endl << "No such ID of line!" << endl;
+        return false;
+    }
+
+    return true;
+}
+
+bool isValidIdPoint(long long idPoint) {
+    if (idPoint >= actualSizePoints) {
+        std::cout << endl << "No such ID of point!" << endl;
+        return false;
+    }
+
+    return true;
 }
 
 bool verifyInputDataName(const string& name) {
@@ -112,31 +132,19 @@ void savePointsToFile(ofstream& fileToWritePointsIn) {
     }
 }
 
-bool isPointOnLine(int idOfPoint, int idOfLine) {
-    if (idOfPoint >= actualSizePoints) {
-        std::cout << endl << "No such ID of point!" << endl;
+bool isPointOnLine(long long idOfPoint, long long idOfLine) {
+    if (!isValidIdPoint(idOfPoint) || !isValidIdLine(idOfLine))
         return false;
-    }
-    if (idOfLine >= actualSizeLines) {
-        std::cout << endl << "No such ID of line!" << endl;
-        return false;
-    }
-
+    
     return ((lines[idOfLine].a * points[idOfPoint].x) + lines[idOfLine].b) == points[idOfPoint].y;
 }
 
-bool createLine(int idOfLinePar, int idOfPointThrough, ofstream& fileToWriteLinesIn) {
-    if (idOfPointThrough >= actualSizePoints) {
-        std::cout << endl << "No such ID of point!" << endl;
+bool createLine(long long idOfLinePar, long long idOfPointThrough, ofstream& fileToWriteLinesIn) {
+    if (!isValidIdPoint(idOfPointThrough) || !isValidIdLine(idOfLinePar))
         return false;
-    }
-    if (idOfLinePar >= actualSizeLines) {
-        std::cout << endl << "No such ID of line!" << endl;
-        return false;
-    }
 
-    int coefOfLine = lines[idOfLinePar].a;
-    int bOfLine = ((-1) * coefOfLine) * (points[idOfPointThrough].x) + points[idOfPointThrough].y;
+    double coefOfLine = lines[idOfLinePar].a;
+    double bOfLine = ((-1) * coefOfLine) * (points[idOfPointThrough].x) + points[idOfPointThrough].y;
 
     bool toSaveIt;
     std::cout << endl << "The line parallel to the line with id: " << idOfLinePar << " and going through point with id: " << idOfPointThrough << " is: y = " << coefOfLine << "x +" << bOfLine << endl << "Do you wish to save this line? (1 for 'yes / 0 for 'no')";
@@ -158,6 +166,63 @@ bool createLine(int idOfLinePar, int idOfPointThrough, ofstream& fileToWriteLine
     return true;
 }
 
+bool createPerpLine(long long idOfLine, long long idOfPoint, ostream& fileToWriteLinesIn) {
+    if (!isValidIdPoint(idOfPoint) || !isValidIdLine(idOfLine))
+        return false;
+
+    while (!isPointOnLine(idOfPoint, idOfLine)) {
+        string answer;
+        std::cout << endl << "The point (" << points[idOfPoint].x << ", " << points[idOfPoint].y << ") with id: "
+            << idOfPoint << " is NOT on the line y= " << lines[idOfLine].a << "x + " << lines[idOfLine].b
+            << "with id: " << idOfLine << ", please choose different point or line (po for new point, li for new line, b for both,e for exit)";
+        std::cin >> answer;
+
+        if (answer == "po") {
+            std::cout << endl << "Please enter the id of the new point: ";
+            std::cin >> idOfPoint;
+            if (!isValidIdPoint(idOfPoint))
+                return false;
+        }
+        else if (answer == "li") {
+            std::cout << endl << "Please enter the id of the new line: ";
+            std::cin >> idOfLine;
+            if (!isValidIdLine(idOfLine))
+                return false;
+        }
+        else if (answer == "b") {
+            std::cout << endl << "Please enter the id of the new point and the id of the new line: ";
+            std::cin >> idOfPoint >> idOfLine;
+            if (!isValidIdPoint(idOfPoint) || !isValidIdLine(idOfLine))
+                return false;
+        }
+        else if (answer == "e") {
+            return false;
+        }
+        while(answer != "po" && answer != "li" && answer != "b") {
+            std::cout << "Not a valid answer, please enter a valid answer (po/li/b): ";
+            std::cin >> answer;
+        }
+    }
+
+    double coefLine = lines[idOfLine].a;
+    double newCoef = (-1) / coefLine;
+    double bOfNewLine = ((-1) * newCoef * points[idOfPoint].x) + points[idOfPoint].y;
+
+    bool saveIt;
+    std::cout << endl << "The perpendicular line to the line y = " << coefLine
+        << "x + " << lines[idOfLine].b << " with ID: " << idOfLine <<
+        " and going through the point (" << points[idOfPoint].x << ", "
+        << points[idOfPoint].y << ") with ID: " << idOfPoint << " is y = "
+        << newCoef << "x + " << bOfNewLine << ". Do you want to save this line?(1 for yes/0 for no): ";
+    std::cin >> saveIt;
+
+    if (saveIt) {
+        inputLine(newCoef, bOfNewLine);
+    }
+
+    return true;
+}
+
 void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
     bool toBeStopped = false;
     string answer;
@@ -170,13 +235,14 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
             "Name a created point. (np)," << endl <<
             "Check if point is on line. (cp)" << endl <<
             "Find parallel line to another line and going through a point. (par)" << endl <<
+            "Find perpendicular line to another line that passes through given point. (perp)" << endl <<
             "Enter 0 to terminate program," << endl <<
             "Enter your choice: ";
         std::cin >> answer;
 
         if (answer == "l") {
             std::cout << endl << "Please enter coefficients a and b: ";
-            long long a, b;
+            double a, b;
             std::cin >> a >> b;
 
             while (verifyInputData(a, b)) {
@@ -189,7 +255,7 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
         }
         else if (answer == "p") {
             std::cout << endl << "Please enter coordinates x and y: ";
-            long long x, y;
+            double x, y;
 
             std::cin >> x >> y;
 
@@ -258,6 +324,15 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
             createLine(idL, idP, fileToWriteLinesIn);
         }
 
+        else if (answer == "perp") {
+            std::cout << endl << "Please enter the id of the line to be perpendicular to and the id of the point that is on the given line: ";
+            
+            long long idL, idP;
+            std::cin >> idL >> idP;
+
+            createPerpLine(idL, idP, fileToWriteLinesIn);
+        }
+
         else if (answer == "0") {
             toBeStopped = true;
             saveLinesToFile(fileToWriteLinesIn);
@@ -286,3 +361,4 @@ int main()
     MyFileLines.close();
     MyFilePoints.close();
 }
+
