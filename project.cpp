@@ -286,4 +286,3 @@ int main()
     MyFileLines.close();
     MyFilePoints.close();
 }
-
