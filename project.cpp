@@ -147,7 +147,10 @@ bool createLine(long long idOfLinePar, long long idOfPointThrough, ofstream& fil
     double bOfLine = ((-1) * coefOfLine) * (points[idOfPointThrough].x) + points[idOfPointThrough].y;
 
     bool toSaveIt;
-    std::cout << endl << "The line parallel to the line with id: " << idOfLinePar << " and going through point with id: " << idOfPointThrough << " is: y = " << coefOfLine << "x +" << bOfLine << endl << "Do you wish to save this line? (1 for 'yes / 0 for 'no')";
+    std::cout << endl << "The line parallel to the line y = " << coefOfLine << "x + " << lines[idOfLinePar].b << 
+        " with id : " << idOfLinePar << " and going through point (" << points[idOfPointThrough].x << ", " <<
+        points[idOfPointThrough].y << ") with id : " << idOfPointThrough << " is : y = " << coefOfLine << 
+        "x + " << bOfLine << endl << "Do you wish to save this line ? (1 for 'yes / 0 for 'no')";
     
     std::cin >> toSaveIt;
 
@@ -223,6 +226,46 @@ bool createPerpLine(long long idOfLine, long long idOfPoint, ostream& fileToWrit
     return true;
 }
 
+bool checkInterception(long long idLineOne, long long idLineTwo) {
+    if (!isValidIdPoint(idLineOne) || !isValidIdLine(idLineTwo))
+        return false;
+
+    double coefLineOne = lines[idLineOne].a;
+    double coefLineTwo = lines[idLineTwo].a;
+
+    double bLineOne = lines[idLineOne].b;
+    double bLineTwo = lines[idLineTwo].b;
+
+    if (coefLineOne == coefLineTwo) {
+
+        if (bLineOne == bLineTwo) {
+            std::cout << endl << "These are the same line!" << endl;
+            return true;
+        }
+        else {
+            std::cout << endl << "The lines are parralel, they don't intersect!" << endl;
+            return false;
+        }
+    }
+    else {
+        double xCoord, yCoord;
+        bool saveIt;
+
+        xCoord = (bLineTwo - bLineOne) / (coefLineOne - coefLineTwo);
+        yCoord = (coefLineOne * xCoord) + bLineOne;
+
+        std::cout << endl << "This lines intersect, the intersection point is: (" << xCoord << ", " << yCoord << "). Do you want to save this point? (1 for yes, 0 for no): ";
+        std::cin >> saveIt;
+
+        if (saveIt)
+            inputPoint(xCoord, yCoord);
+
+        return true;
+    }
+}
+
+
+
 void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
     bool toBeStopped = false;
     string answer;
@@ -236,11 +279,19 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
             "Check if point is on line. (cp)" << endl <<
             "Find parallel line to another line and going through a point. (par)" << endl <<
             "Find perpendicular line to another line that passes through given point. (perp)" << endl <<
+            "Check if two lines intercept.(inte)" << endl <<
             "Enter 0 to terminate program," << endl <<
             "Enter your choice: ";
         std::cin >> answer;
 
         if (answer == "l") {
+            bool exit;
+            std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
+            std::cin >> exit;
+
+            if (exit)
+                continue;
+
             std::cout << endl << "Please enter coefficients a and b: ";
             double a, b;
             std::cin >> a >> b;
@@ -254,6 +305,13 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
             
         }
         else if (answer == "p") {
+            bool exit;
+            std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
+            std::cin >> exit;
+
+            if (exit)
+                continue;
+
             std::cout << endl << "Please enter coordinates x and y: ";
             double x, y;
 
@@ -269,6 +327,13 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
         }
 
         else if (answer == "nl") {
+            bool exit;
+            std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
+            std::cin >> exit;
+
+            if (exit)
+                continue;
+
             std::cout << endl << "Please enter the ID of the line you wish to name: ";
             long long ID;
             std::cin >> ID;
@@ -286,6 +351,13 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
         }
 
         else if (answer == "np") {
+            bool exit;
+            std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
+            std::cin >> exit;
+
+            if (exit)
+                continue;
+
             std::cout << endl << "Please enter the ID of the point you wish to name: ";
             long long ID;
             std::cin >> ID;
@@ -303,6 +375,13 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
         }
 
         else if (answer == "cp") {
+            bool exit;
+            std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
+            std::cin >> exit;
+
+            if (exit)
+                continue;
+
             std::cout << endl << "Please enter the id of the point and id of line: ";
             
             long long idP, idL;
@@ -316,6 +395,13 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
         }
 
         else if (answer == "par") {
+            bool exit;
+            std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
+            std::cin >> exit;
+
+            if (exit)
+                continue;
+
             std::cout << endl <<  "enter the ids of the line to be parallel to and the point to go through: ";
 
             long long idP, idL;
@@ -325,6 +411,13 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
         }
 
         else if (answer == "perp") {
+            bool exit;
+            std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
+            std::cin >> exit;
+
+            if (exit)
+                continue;
+
             std::cout << endl << "Please enter the id of the line to be perpendicular to and the id of the point that is on the given line: ";
             
             long long idL, idP;
@@ -333,7 +426,30 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
             createPerpLine(idL, idP, fileToWriteLinesIn);
         }
 
+        else if (answer == "inte") {
+            bool exit;
+            std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
+            std::cin >> exit;
+
+            if (exit)
+                continue;
+
+            std::cout << endl << "Please enter the ids of the lines: (2 ids):";
+
+            long long idLOne, idLTwo;
+            std::cin >> idLOne >> idLTwo;
+
+            checkInterception(idLOne, idLTwo);
+        }
+
         else if (answer == "0") {
+            bool exit;
+            std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
+            std::cin >> exit;
+
+            if (exit)
+                continue;
+
             toBeStopped = true;
             saveLinesToFile(fileToWriteLinesIn);
             savePointsToFile(fileToWritePointsIn);
