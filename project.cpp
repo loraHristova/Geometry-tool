@@ -739,6 +739,122 @@ bool checkInterceptParabola(double a, double b, double c, double aL, double bL)
     return true;
 }
 
+bool areLinesTheSame(double a1, double b1, double a2, double b2) {
+    return (a1 == a2) && (b1 == b2);
+}
+
+bool areLinesPerpendicular(double a1, double a2) {
+    return (a1 == (-1) / a2);
+}
+
+bool canYouCreateTetragon(double a1, double b1, double a2, double b2, double a3, double b3, double a4, double b4) {
+    if (areLinesTheSame(a1, b1, a2, b2) || areLinesTheSame(a1, b1, a3, b3) || areLinesTheSame(a1, b1, a4, b4) || areLinesTheSame(a2, b2, a3, b3) ||
+        areLinesTheSame(a2, b2, a4, b4) || areLinesTheSame(a3, b3, a4, b4)) {
+        std::cout << endl << "One line has been used more than once, can't create tetragon!";
+        return false;
+    }
+
+    if ((((a1 == a2) && (a2 == a3)) || ((a1 == a2) && (a2 == a4))) ||
+        (((a1 == a3) && (a3 == a4)) || (a2 == a3) && (a3 == a4)))
+    {
+        std::cout << endl << "Cannot create tetragon! At least three of the lines are parallel!";
+        return false;
+    }
+
+    return true;
+}
+
+bool isTetragonRectangle(double a1, double a2, double a3, double a4)
+{
+    return (areLinesPerpendicular(a1, a2) && areLinesPerpendicular(a1, a3) && a1 == a4) ||
+        (areLinesPerpendicular(a1, a2) && areLinesPerpendicular(a1, a4) && a1 == a3) ||
+        (areLinesPerpendicular(a1, a3) && areLinesPerpendicular(a1, a4) && a1 == a2);
+}
+
+bool calculateIntersectionPointOfTwoLines(double& x, double& y, double a1, double b1, double a2, double b2)
+{
+    if (a1 == a2) {
+        return false;
+    }
+
+
+    x = (b2 - b1) / (a1 - a2); 
+    y = a1 * x - b1;
+    return true;
+}
+
+bool areAllSidesEqual(double a1, double b1, double a2, double b2, double a3, double b3, double a4, double b4)
+{
+    double xa, ya,
+        xb, yb,
+        xc, yc,
+        xd, yd;
+
+    calculateIntersectionPointOfTwoLines(xa, ya, a1, b1, a4, b4);
+    calculateIntersectionPointOfTwoLines(xb, yb, a1, b1, a2, b2);
+    calculateIntersectionPointOfTwoLines(xc, yc, a2, b2, a3, b3);
+    calculateIntersectionPointOfTwoLines(xd, yd, a3, b3, a4, b4);
+
+
+    double AB = sqrt((xb - xa) * (xb - xa) + (yb - ya) * (yb - ya));
+    double AD = sqrt((xd - xa) * (xd - xa) + (yd - ya) * (yd - ya));
+    double BC = sqrt((xc - xb) * (xc - xb) + (yc - yb) * (yc - yb));
+    double CD = sqrt((xd - xc) * (xd - xc) + (yd - yc) * (yd - yc));
+
+    return (AB == AD && AD == BC && BC == CD);
+}
+
+void determineTheTypeOfTetragon(double a1, double b1, double a2, double b2, double a3, double b3, double a4, double b4)
+{
+    if (canYouCreateTetragon(a1, b1, a2, b2, a3, b3, a4, b4))
+    {
+        if (isTetragonRectangle(a1, a2, a3, a4) || isTetragonRectangle(a2, a1, a3, a4) ||
+            isTetragonRectangle(a3, a1, a2, a4) || isTetragonRectangle(a4, a1, a2, a3))
+        {
+            if (areAllSidesEqual(a1, b1, a2, b2, a3, b3, a4, b4) || areAllSidesEqual(a2, b2, a1, b1, a3, b3, a4, b4) ||
+                areAllSidesEqual(a3, b3, a1, b1, a2, b2, a4, b4) || areAllSidesEqual(a4, b4, a1, b1, a2, b2, a3, b3))
+            {
+                std::cout << endl << "The tetragon is a SQUARE!";
+            }
+            else
+            {
+                std::cout << endl << "The tetragon is a RECTANGLE!";
+            }
+        }
+        else
+        {
+            if ((a1 == a2 && a3 == a4) ||
+                (a1 == a3 && a2 == a4) ||
+                (a1 == a4 && a2 == a3))
+            {
+                if (areAllSidesEqual(a1, b1, a3, b3, a2, b2, a4, b4) ||
+                    areAllSidesEqual(a1, b1, a2, b2, a3, b3, a4, b4) ||
+                    areAllSidesEqual(a1, b1, a2, b2, a4, b4, a3, b3) ||
+                    areAllSidesEqual(a2, b2, a1, b1, a3, b3, a4, b4) ||
+                    areAllSidesEqual(a2, b2, a1, b1, a4, b4, a3, b3) ||
+                    areAllSidesEqual(a3, b3, a1, b1, a4, b4, a2, b2))
+                {
+                    std::cout << endl << "The tetragon is a RHOMBUS!";
+                }
+                else
+                {
+                    std::cout << endl << "The tetragon is a PARALLELOGRAM!";
+                }
+            }
+            else if (a1 == a2 || a1 == a3 ||
+                a1 == a4 || a2 == a3 ||
+                a2 == a4 || a3 == a4)
+            {
+                std::cout << endl << "The tetragon is a TRAPEZOID!";
+            }
+            else
+            {
+                std::cout << endl << "It is just a tetragon!";
+            }
+        }
+    }
+}
+
 void printIsPointOnLineWithId(long long idPoint, long long idLine) {
     if (isPointOnLineWithId(idPoint, idLine)) {
         std::cout << "The point (" << points[idPoint].x << ", " << points[idPoint].y << ") is on the line y = " << lines[idLine].a << "x ";
@@ -811,6 +927,7 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
             "Build a triangle by three points and get altitudes, medians and semitrals. (tr)" << endl << 
             "Find the tangential of a parabola and a point. (tan)" << endl << 
             "Find interception points between parabola and a line. (interPar)" << endl <<
+            "Find the type of tetragon by 4 lines. (tetr)" << endl <<
             "Enter 0 to terminate program," << endl <<
             "Enter your choice: ";
         std::cin >> answer;
@@ -1599,6 +1716,30 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
             }
 
             checkInterceptParabola(a, b, c, aL, bL);
+        }
+
+        else if (answer == "tetr") {
+            bool exit;
+            std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
+            std::cin >> exit;
+
+            if (exit)
+                continue;
+
+            double a1, b1, a2, b2, a3, b3, a4, b4;
+            std::cout << endl << "Please enter the coordinates of the first line: ";
+            std::cin >> a1 >> b1;
+
+            std::cout << endl << "Please enter the coordinates of the second line: ";
+            std::cin >> a2 >> b2;
+
+            std::cout << endl << "Please enter the coordinates of the third line: ";
+            std::cin >> a3 >> b3;
+
+            std::cout << endl << "Please enter the coordinates of the fourth line: ";
+            std::cin >> a4 >> b4;
+
+            determineTheTypeOfTetragon(a1, b1, a2, b2, a3, b3, a4, b4);
         }
 
         else if (answer == "0") {
