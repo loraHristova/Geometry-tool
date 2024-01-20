@@ -29,10 +29,23 @@ struct Point {
     Point(double _x, double _y, string _name = "-") : x(_x), y(_y), name(_name) {}
 };
 
+struct Parabola {
+    double a;
+    double b;
+    double c;
+    string name;
+    long long id;
+
+    Parabola() : Parabola(0, 0, 0) {}
+    Parabola(double _a, double _b, double _c, string _name = "-") : a(_a), b(_b), c(_c), name(_name) {}
+};
+
 vector<Line> lines(MAX);
 long long actualSizeLines = 0;
 vector<Point> points(MAX);
 long long actualSizePoints = 0;
+vector<Parabola> parabolas(MAX);
+long long actualSizeParabolas = 0;
 
 void inputLine(double a, double b) {
     Line line(a, b);
@@ -57,6 +70,25 @@ void inputPoint(double x, double y) {
     std::cout << endl << "Your point " << "(" << x << " , " << y << ") has been created successfully!" << endl << "ID of point: " << actualSizePoints - 1 << endl;
 }
 
+void inputParabola(double a, double b, double c) {
+    Parabola parabola(a, b, c);
+    parabolas[actualSizeParabolas] = parabola;
+    parabolas[actualSizeParabolas].id = actualSizeParabolas;
+    actualSizeParabolas++;
+
+    std::cout << endl << "Your parabola " << a << "x^2 ";
+
+    if (b >= 0)
+        std::cout << "+ ";
+
+    std::cout << b << "x ";
+
+    if (c >= 0)
+        std::cout << "+ ";
+
+    std::cout << c << " = 0 has been created successfully!" << endl << "ID of parabola: " << actualSizeParabolas - 1 << endl;
+}
+
 void setNameToLine(long long index, const string& _name) {
     if (index < actualSizeLines)
     {
@@ -76,6 +108,31 @@ void setNameToPoint(long long index, const string& _name) {
 
     else
         std::cout << endl << "This is an invalid ID, no such point exists!" << std::endl;
+}
+
+void setNameToParabola(long long index, const string& _name) {
+    if (index < actualSizeParabolas) {
+        parabolas[index].name = _name;
+        std::cout << endl << "The name: " << parabolas[index].name << " to parabola " << parabolas[index].a << "x^2 ";
+
+        if (parabolas[index].b >= 0)
+            std::cout << "+ ";
+
+        std::cout << parabolas[index].b << "x ";
+
+        if (parabolas[index].c >= 0)
+            std::cout << "+ ";
+
+        std::cout << parabolas[index].c << " was set successfully!" << endl;
+    }
+
+    else
+        std::cout << endl << "This is an invalid ID, no such parabola exists!" << std::endl;
+
+}
+
+bool isPointOnParabola(double a, double b, double c, double x, double y) {
+    return ((a * x * x) + (b * x) + c) == y;
 }
 
 bool verifyInputData(double a, double b) {
@@ -351,16 +408,25 @@ double findDistanceBetweenTwoPoints(double xFirst, double yFirst, double xSecond
     return sqrt((xFirst - xSecond) * (xFirst - xSecond) + (yFirst - ySecond) * (yFirst - ySecond));
 }
 
-void findLineBetweenTwoPoints(double xFirst, double yFirst, double xSecond, double ySecond, double& coef, double& b, bool& isVertical) {
-    if ((xSecond - xFirst) == 0) {
+void findLineBetweenTwoPoints(double xFirst, double yFirst, double xSecond, double ySecond, double& coef, double& b, bool& isVertical, bool& isHorizontal) {
+    
+    if ((ySecond - yFirst) == 0) {
+        coef = 0;
+        b = ySecond;
+        isHorizontal = true;
+        isVertical = false;
+    }
+    else if ((xSecond - xFirst) == 0) {
         coef = 1;
         b = xFirst;
         isVertical = true;
+        isHorizontal = false;
     }
     else {
         coef = (ySecond - yFirst) / (xSecond - xFirst);
         b = yFirst - (coef * xFirst);
         isVertical = false;
+        isHorizontal = false;
     }
 }
 
@@ -369,42 +435,92 @@ bool isValidTriangle(double xF, double yF, double xS, double yS, double xT, doub
     double distFT = findDistanceBetweenTwoPoints(xF, yF, xT, yT);
     double distST = findDistanceBetweenTwoPoints(xS, yS, xT, yT);
 
+    if (xF == xS == xT || yF == yS == yT) {
+        return false;
+    }
+
     return !((distFS + distFT <= distST) || (distFS + distST <= distFT) || (distFT + distST <= distFS));
 }
 
 void findAltitudes(double xFirst, double yFirst, double xSecond, double ySecond, double xThird, double yThird) {
     double coefFS, coefFT, coefST, bFS, bFT, bST;
-    bool isVertical;
+    bool isVertical, isHorizontalFS, isHorizontalFT, isHorizontalST;
 
-    findLineBetweenTwoPoints(xFirst, yFirst, xSecond, ySecond, coefFS, bFS, isVertical);
-    findLineBetweenTwoPoints(xFirst, yFirst, xThird, yThird, coefFT, bFT, isVertical);
-    findLineBetweenTwoPoints(xSecond, ySecond, xThird, yThird, coefST, bST, isVertical);
+    findLineBetweenTwoPoints(xFirst, yFirst, xSecond, ySecond, coefFS, bFS, isVertical, isHorizontalFS);
+    findLineBetweenTwoPoints(xFirst, yFirst, xThird, yThird, coefFT, bFT, isVertical, isHorizontalFT);
+    findLineBetweenTwoPoints(xSecond, ySecond, xThird, yThird, coefST, bST, isVertical, isHorizontalST);
 
     double coefAltF, coefAltS, coefAltT, bAltF, bAltS, bAltT;
 
-    coefAltF = (-1) / coefST;
-    bAltF = yFirst - (coefAltF * xFirst);
+    if (coefST == 0) {
+        coefAltF = -1;
+        bAltF = yFirst - xFirst;
+    }
+    else if (coefST == 1) {
+        coefAltF = 0;
+        bAltF = yFirst;
+    }
+    else {
+        coefAltF = (-1) / coefST;
+        bAltF = yFirst - (coefAltF * xFirst);
+    }
+    
 
-    coefAltS = (-1) / coefFT;
-    bAltS = ySecond - (coefAltS * xSecond);
+    if (coefFT == 0) {
+        coefAltS = -1;
+        bAltS = ySecond - xSecond;
+    }
+    else if (coefFT == 1) {
+        coefAltS = 0;
+        bAltS = ySecond;
+    }
+    else {
+        coefAltS = (-1) / coefFT;
+        bAltS = ySecond - (coefAltS * xSecond);
+    }
+    
+    if (coefFS == 0) {
+        coefAltT = -1;
+        bAltT = yThird - xThird;
+    }
+    else if (coefFS == 1) {
+        coefAltT = 0;
+        bAltT = yThird;
+    }
+    else {
+        coefAltT = (-1) / coefFS;
+        bAltT = yThird - (coefAltT * xThird);
+    }
 
-    coefAltT = (-1) / coefFS;
-    bAltT = yThird - (coefAltT * xThird);
+    std::cout << endl << "The altitude from point (" << xFirst << ", " << yFirst << ") is ";
+    
+    if (isHorizontalST) {
+        std:cout << "0 = ";
+    }
+    else
+        std::cout << "y = ";
 
-    std::cout << endl << "The altitude from point (" << xFirst << ", " << yFirst << ") is y = " << coefAltF <<
-        "x + " << bAltF << "." << endl << "The altitude from point (" << xSecond << ", " << ySecond << ") is y = "
-        << coefAltS << "x + " << bAltS << "." << endl << "The altitude from point (" << xThird << ", " << yThird << ") is y = " << coefAltT <<
-        "x + " << bAltT << ". Do you wish to save those lines? (1 0 0 for 'save only first', ..., 1 1 1 for 'save all'): ";
+    std::cout << coefAltF << "x + " << bAltF << "." << endl;
+    
+    std::cout << "The altitude from point (" << xSecond << ", " << ySecond << ") is ";
 
-    bool saveF, saveS, saveT;
-    std::cin >> saveF >> saveS >> saveT;
+    if (isHorizontalFT) {
+        std::cout << "0 = ";
+    }
+    else
+        std::cout << "y = ";
 
-    if (saveF)
-        inputLine(coefAltF, bAltF);
-    if (saveS)
-        inputLine(coefAltS, bAltS);
-    if (saveT)
-        inputLine(coefAltT, bAltT);
+    std::cout << coefAltS << "x + " << bAltS << "." << endl;
+    
+    std::cout << "The altitude from point (" << xThird << ", " << yThird << ") is ";
+
+    if (isHorizontalFS) {
+        std::cout << "0 = ";
+    }
+    else
+        std::cout << "y = ";
+    
+    std::cout << coefAltT << "x + " << bAltT << "." << endl;
 }
 
 void findMedians(double xFirst, double yFirst, double xSecond, double ySecond, double xThird, double yThird) {
@@ -418,14 +534,14 @@ void findMedians(double xFirst, double yFirst, double xSecond, double ySecond, d
     double yHalfST = (ySecond + yThird) / 2;
 
     double coefF, coefS, coefT, bF, bS, bT;
-    bool isVerticalF, isVerticalS, isVerticalT;
+    bool isVerticalF, isVerticalS, isVerticalT, isHorizontal;
 
-    findLineBetweenTwoPoints(xFirst, yFirst, xHalfST, yHalfST, coefF, bF, isVerticalF);
-    findLineBetweenTwoPoints(xSecond, ySecond, xHalfFT, yHalfFT, coefS, bS, isVerticalS);
-    findLineBetweenTwoPoints(xThird, yThird, xHalfFS, yHalfFS, coefT, bT, isVerticalT);
+    findLineBetweenTwoPoints(xFirst, yFirst, xHalfST, yHalfST, coefF, bF, isVerticalF, isHorizontal);
+    findLineBetweenTwoPoints(xSecond, ySecond, xHalfFT, yHalfFT, coefS, bS, isVerticalS, isHorizontal);
+    findLineBetweenTwoPoints(xThird, yThird, xHalfFS, yHalfFS, coefT, bT, isVerticalT, isHorizontal);
 
     std::cout << endl << "The median from (" << xFirst << ", " << yFirst << ") is: ";
-    
+
     if (isVerticalF)
         std::cout << "x = " << bF << "." << endl;
     else {
@@ -436,44 +552,32 @@ void findMedians(double xFirst, double yFirst, double xSecond, double ySecond, d
 
         std::cout << bF << "." << endl;
     }
-        
+
     std::cout << "The median from (" << xSecond << ", " << ySecond << ") is: ";
 
     if (isVerticalS)
         std::cout << "x = " << bS << "." << endl;
     else {
         std::cout << "y = " << coefS << "x ";
-        
+
         if (bS >= 0)
             std::cout << "+ ";
-        
+
         std::cout << bS << "." << endl;
     }
     std::cout << "The median from (" << xThird << ", " << yThird << ") is:";
-    
+
     if (isVerticalT) {
         std::cout << "x = " << bT << "." << endl;
     }
     else {
         std::cout << "y = " << coefT << "x ";
-        
+
         if (bT >= 0)
             std::cout << "+ ";
 
         std::cout << bT << "." << endl;
     }
-
-    std::cout << endl << ". Do you want to save those lines? (1 0 0 for saving only the first, ..., 1 1 1 for saving all): ";
-
-    bool saveF, saveS, saveT;
-    std::cin >> saveF >> saveS >> saveT;
-
-    if (saveF)
-        inputLine(coefF, bF);
-    if (saveS)
-        inputLine(coefS, bS);
-    if (saveT)
-        inputLine(coefT, bT);
 }
 
 void findSimetrals(double xFirst, double yFirst, double xSecond, double ySecond, double xThird, double yThird) {
@@ -487,40 +591,129 @@ void findSimetrals(double xFirst, double yFirst, double xSecond, double ySecond,
     double yHalfST = (ySecond + yThird) / 2;
 
     double coefLineFS, coefLineST, coefLineFT, bLineFS, bLineST, bLineFT;
-    bool isVertical;
+    bool isVertical, isHorizontal;
 
-    findLineBetweenTwoPoints(xFirst, yFirst, xSecond, ySecond, coefLineFS, bLineFS, isVertical);
-    findLineBetweenTwoPoints(xFirst, yFirst, xThird, yThird, coefLineFT, bLineFT, isVertical);
-    findLineBetweenTwoPoints(xSecond, ySecond, xThird, yThird, coefLineST, bLineST, isVertical);
+    findLineBetweenTwoPoints(xFirst, yFirst, xSecond, ySecond, coefLineFS, bLineFS, isVertical, isHorizontal);
+    findLineBetweenTwoPoints(xFirst, yFirst, xThird, yThird, coefLineFT, bLineFT, isVertical, isHorizontal);
+    findLineBetweenTwoPoints(xSecond, ySecond, xThird, yThird, coefLineST, bLineST, isVertical, isHorizontal);
 
-    double newCoefFS = (-1) / coefLineFS;
-    double bOfNewFS = ((-1) * newCoefFS * xHalfFS) + yHalfFS;
+    double newCoefFS, newCoefFT, newCoefST, bOfNewFS, bOfNewFT, bOfNewST;
 
-    double newCoefFT = (-1) / coefLineFT;
-    double bOfNewFT = ((-1) * newCoefFT * xHalfFT) + yHalfFT;
+    if (coefLineFS == 0) {
+        newCoefFS = -1;
+        bOfNewFS = xHalfFS;
+    }
+    else if (coefLineFS == 1) {
+        newCoefFS = 0;
+        bOfNewFS = yHalfFS;
+    }
+    else {
+        newCoefFS = (-1) / coefLineFS;
+        bOfNewFS = ((-1) * newCoefFS * xHalfFS) + yHalfFS;
+    }
 
-    double newCoefST = (-1) / coefLineST;
-    double bOfNewST = ((-1) * newCoefST * xHalfST) + yHalfST;
+    if (coefLineFT == 0) {
+        newCoefFT = -1;
+        bOfNewFT = xHalfFT;
+    }
+    else if (coefLineFT == 1) {
+        newCoefFT = 0;
+        bOfNewFT = yHalfFT;
+    }
+    else {
+        newCoefFT = (-1) / coefLineFT;
+        bOfNewFT = ((-1) * newCoefFT * xHalfFT) + yHalfFT;
+    }
+
+
+    if (coefLineST == 0) {
+        newCoefST = -1;
+        bOfNewST = xHalfST;
+    }
+    else if (coefLineST == 1) {
+        newCoefST = 0;
+        bOfNewST = yHalfST;
+    }
+    else {
+        newCoefST = (-1) / coefLineST;
+        bOfNewST = ((-1) * newCoefST * xHalfST) + yHalfST;
+    }
 
     std::cout << endl << "The simetral through the line between points (" << xFirst << ", " << yFirst << ") and (" << xSecond << ", " <<
-        ySecond << ") is y = " << newCoefFS << "x ";
+        ySecond << ") is ";
+    
+    if (!coefLineFS) {
+        std::cout << "0 = ";
+    }
+    else
+        std::cout << "y = ";
+
+    std::cout << newCoefFS << "x ";
 
     if (bOfNewFS >= 0)
         std::cout << "+ ";
 
-    std::cout << bOfNewFS << "." << endl << "The simetral through the line between points(" << xFirst << ", " << yFirst << ") and (" << xThird << ", " <<
-        yThird << ") is y = " << newCoefFT << "x ";
+    std::cout << bOfNewFS << "." << endl;
+    
+    std::cout << "The simetral through the line between points(" << xFirst << ", " << yFirst << ") and (" << xThird << ", " <<
+        yThird << ") is ";
+    
+    if (!coefLineFT) {
+        std::cout << "0 = ";
+    }
+    else
+        std::cout << "y = ";
+
+       std::cout << newCoefFT << "x ";
 
     if (bOfNewFT >= 0)
         std::cout << "+ ";
 
-    std::cout << bOfNewFT << "." << endl << "The simetral through the line between points(" << xSecond << ", " << ySecond << ") and (" << xThird << ", " <<
-        yThird << ") is y = " << newCoefST << "x ";
+    std::cout << bOfNewFT << "." << endl;
+    
+    std::cout << "The simetral through the line between points(" << xSecond << ", " << ySecond << ") and (" << xThird << ", " <<
+        yThird << ") is ";
+    
+    if (!coefLineST)
+        std::cout << "0 = ";
+    else
+        std::cout << "y = ";
+
+   std::cout << newCoefST << "x ";
 
     if (bOfNewST >= 0)
         std::cout << "+ ";
 
-    std::cout << bOfNewST << ".";
+    std::cout << bOfNewST << "." << endl;
+}
+
+void askToSaveParabola(double a, double b, double c) {
+    bool save;
+    std::cout << endl << "Do you wish to save the parabola? (1 for yes/0 for no): ";
+    std::cin >> save;
+
+    if (save)
+        inputParabola(a, b, c);
+}
+
+void findTangential(double a, double b, double c, double x, double y) {
+    while (!isPointOnParabola(a, b, c, x, y)) {
+        std::cout << endl << "This point is not on the parabola, please choose a point that is! Enter new coordinates: ";
+        std::cin >> x >> y;
+    }
+
+    double first = (2 * a * x) + b;
+    double coefLine = first;
+    double bLine = ((-1) * first * x) + y;
+
+    std::cout << endl << "The tangential is y = " << coefLine << "x ";
+
+    if (bLine >= 0)
+        std::cout << "+ ";
+
+    std::cout << bLine << "." << endl;
+
+    askToSaveLine(coefLine, bLine);
 }
 
 void printIsPointOnLineWithId(long long idPoint, long long idLine) {
@@ -593,6 +786,7 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
             "Find perpendicular line to another line that passes through given point. (perp)" << endl <<
             "Check if two lines intercept.(inte)" << endl <<
             "Build a triangle by three points and get altitudes, medians and semitrals. (tr)" << endl << 
+            "Find the tangential of a parabola and a point. (tan)" << endl << 
             "Enter 0 to terminate program," << endl <<
             "Enter your choice: ";
         std::cin >> answer;
@@ -1284,6 +1478,54 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
                     findSimetrals(x1, y1, x2, y2, x3, y3);
                 }
             }  
+        }
+
+        else if (answer == "tan") {
+            bool exit;
+            std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
+            std::cin >> exit;
+
+            if (exit)
+                continue;
+
+            double a, b, c;
+            std::cout << endl << "Please enter the coefficients of the parabola (a, b, c in ax^2 + bx + c = 0): ";
+            std::cin >> a >> b >> c;
+
+            askToSaveParabola(a, b, c);
+
+            bool createdPoint;
+            if (actualSizePoints > 0) {
+                std::cout << endl << "Do you want to use a point that is already created? (1 for yes/0 for no): ";
+                std::cin >> createdPoint;
+            }
+            else
+                createdPoint = 0;
+
+            if (createdPoint) {
+                long long ID;
+                std::cout << "Please enter the ID of the point you wish to use: ";
+                std::cin >> ID;
+
+                while (!isValidIdPoint(ID)) {
+                    std::cout << endl << "Please enter a valid ID: ";
+                    std::cin >> ID;
+                }
+
+                double x = points[ID].x;
+                double y = points[ID].y;
+
+                findTangential(a, b, c, x, y);
+            }
+            else {
+                double x, y;
+                std::cout << endl << "Please enter the coordinates of the point: ";
+                std::cin >> x >> y;
+
+                askToSavePoint(x, y);
+
+                findTangential(a, b, c, x, y);
+            }
         }
 
         else if (answer == "0") {
