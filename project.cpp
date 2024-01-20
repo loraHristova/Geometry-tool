@@ -716,6 +716,29 @@ void findTangential(double a, double b, double c, double x, double y) {
     askToSaveLine(coefLine, bLine);
 }
 
+bool checkInterceptParabola(double a, double b, double c, double aL, double bL)
+{
+    if ((((aL - b) * (aL - b)) + (4 * a * (bL - c))) < 0) {
+        std::cout << endl << "This parabola and line do not intersect!" << endl;
+        return false;
+    }
+
+    double sqrtOfD = sqrt(((aL - b) * (aL - b)) + (4 * a * (bL - c)));
+
+    double firstX = (-aL + b + sqrtOfD) / (-2 * a);
+    double firstY = (aL * firstX) + bL;
+
+    double secondX = (-aL + b - sqrtOfD) / (-2 * a);
+    double secondY = (aL * secondX) + bL;
+
+    if((firstX == secondX) && (firstY == secondY))
+        std::cout << endl << "Interception in one point: (" << firstX << ", " << firstY << ")";
+    else
+        std::cout << endl << "Interception in the points: (" << firstX << ", " << firstY << ") and (" << secondX << ", " << secondY << ")";
+
+    return true;
+}
+
 void printIsPointOnLineWithId(long long idPoint, long long idLine) {
     if (isPointOnLineWithId(idPoint, idLine)) {
         std::cout << "The point (" << points[idPoint].x << ", " << points[idPoint].y << ") is on the line y = " << lines[idLine].a << "x ";
@@ -787,6 +810,7 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
             "Check if two lines intercept.(inte)" << endl <<
             "Build a triangle by three points and get altitudes, medians and semitrals. (tr)" << endl << 
             "Find the tangential of a parabola and a point. (tan)" << endl << 
+            "Find interception points between parabola and a line. (interPar)" << endl <<
             "Enter 0 to terminate program," << endl <<
             "Enter your choice: ";
         std::cin >> answer;
@@ -1526,6 +1550,55 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
 
                 findTangential(a, b, c, x, y);
             }
+        }
+
+        else if (answer == "interPar") {
+            bool exit;
+            std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
+            std::cin >> exit;
+
+            if (exit)
+                continue;
+
+            double a, b, c;
+            std::cout << endl << "Please enter the coefficients of the parabola: (0 = ax^2 + bx + c): ";
+            std::cin >> a >> b >> c;
+
+            while (!a) {
+                std::cout << endl << "The coefficient 'a' must be different from zero, otherwise it's not a parabola. Please enter 'a' again: " << endl;
+                std::cin >> a;
+            }
+
+            bool createdLine;
+            double aL, bL;
+
+            if (actualSizeLines > 0) {
+                std::cout << endl << "Do you wish to use a line that is already created?: (1 for yes/0 for no): ";
+                std::cin >> createdLine;
+            }
+            else
+                createdLine = 0;
+
+            if (createdLine) {
+                long long ID;
+                std::cout << endl << "Please enter the ID of the line you wish to use: ";
+                std::cin >> ID;
+
+                while (!isValidIdLine(ID)) {
+                    std::cout << endl << "Please enter a valid ID for line: ";
+                    std::cin >> ID;
+                }
+
+                aL = lines[ID].a;
+                bL = lines[ID].b;
+            }
+            else {
+                std::cout << endl << "Please enter the coefficients of the line: (y = ax + b): ";
+                std::cin >> aL >> bL;
+
+            }
+
+            checkInterceptParabola(a, b, c, aL, bL);
         }
 
         else if (answer == "0") {
