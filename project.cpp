@@ -981,7 +981,7 @@ void printIsPointOnLine(double x, double y, double a, double b) {
     }
 }
 
-void askReuse(bool& createdLine, bool& createdPoint) {
+void askReuse(int& createdLine, int& createdPoint) {
     if (actualSizeLines > 0) {
         std::cout << endl << "Do you want to use a line that is already created? (1 for yes/0 for no): ";
         std::cin >> createdLine;
@@ -1093,11 +1093,14 @@ void usersInput(fstream& fileToWriteLinesIn, fstream& fileToWritePointsIn, fstre
                 std::cin >> a >> b;
             }
 
-            inputLine(a, b);
+            if (!isLineInArchive(a, b))
+                inputLine(a, b);
+            else
+                std::cout << endl << "You have already created this line";
             
         }
         else if (answer == "p") {
-            bool exit;
+            int exit;
             std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
             std::cin >> exit;
 
@@ -1114,12 +1117,15 @@ void usersInput(fstream& fileToWriteLinesIn, fstream& fileToWritePointsIn, fstre
                 std::cin >> x >> y;
             }
 
-            inputPoint(x, y);
+            if (!isPointInArchive(x, y))
+                inputPoint(x, y);
+            else
+                std::cout << endl << "You have already saved this point.";
             
         }
 
         else if (answer == "nl") {
-            bool exit;
+            int exit;
             std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
             std::cin >> exit;
 
@@ -1143,7 +1149,7 @@ void usersInput(fstream& fileToWriteLinesIn, fstream& fileToWritePointsIn, fstre
         }
 
         else if (answer == "np") {
-            bool exit;
+            int exit;
             std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
             std::cin >> exit;
 
@@ -1167,14 +1173,14 @@ void usersInput(fstream& fileToWriteLinesIn, fstream& fileToWritePointsIn, fstre
         }
 
         else if (answer == "cp") {
-            bool exit;
+            int exit;
             std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
             std::cin >> exit;
 
             if (exit)
                 continue;
 
-            bool createdLine, createdPoint;
+            int createdLine, createdPoint;
 
             askReuse(createdLine, createdPoint);
 
@@ -1251,14 +1257,14 @@ void usersInput(fstream& fileToWriteLinesIn, fstream& fileToWritePointsIn, fstre
         }
 
         else if (answer == "par") {
-            bool exit;
+            int exit;
             std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
             std::cin >> exit;
 
             if (exit)
                 continue;
 
-            bool createdLine, createdPoint;
+            int createdLine, createdPoint;
 
             askReuse(createdLine, createdPoint);
 
@@ -1332,14 +1338,14 @@ void usersInput(fstream& fileToWriteLinesIn, fstream& fileToWritePointsIn, fstre
         }
 
         else if (answer == "perp") {
-            bool exit;
+            int exit;
             std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
             std::cin >> exit;
 
             if (exit)
                 continue;
 
-            bool createdLine, createdPoint;
+            int createdLine, createdPoint;
 
             askReuse(createdLine, createdPoint);
 
@@ -1417,14 +1423,14 @@ void usersInput(fstream& fileToWriteLinesIn, fstream& fileToWritePointsIn, fstre
         }
 
         else if (answer == "inte") {
-            bool exit;
+            int exit;
             std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
             std::cin >> exit;
 
             if (exit)
                 continue;
 
-            bool firstCreatedLine, secondCreatedLine;
+            int firstCreatedLine, secondCreatedLine;
 
             if (actualSizeLines > 0) {
                 std::cout << endl << "Do you want to use lines you have already created? (0 0 for use two new lines, 1 0 for use first already created line and second new line, ..., 1 1 for use two already created lines): ";
@@ -1506,14 +1512,14 @@ void usersInput(fstream& fileToWriteLinesIn, fstream& fileToWritePointsIn, fstre
         }
 
         else if (answer == "tr") {
-            bool exit;
+            int exit;
             std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
             std::cin >> exit;
 
             if (exit)
                 continue;
 
-            bool firstCreatedPoint, secondCreatedPoint, thirdCreatedPoint;
+            int firstCreatedPoint, secondCreatedPoint, thirdCreatedPoint;
 
             if (actualSizePoints > 0) {
                 std::cout << endl << "Do you want to use already existant points? (0 0 0 for 'not at all', 1 0 0 for 'use only first point of the created, for the rest no', ..., 1 1 1 for 'use all existant points')";
@@ -1766,7 +1772,7 @@ void usersInput(fstream& fileToWriteLinesIn, fstream& fileToWritePointsIn, fstre
         }
 
         else if (answer == "tan") {
-            bool exit;
+            int exit;
             std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
             std::cin >> exit;
 
@@ -1779,7 +1785,7 @@ void usersInput(fstream& fileToWriteLinesIn, fstream& fileToWritePointsIn, fstre
 
             askToSaveParabola(a, b, c);
 
-            bool createdPoint;
+            int createdPoint;
             if (actualSizePoints > 0) {
                 std::cout << endl << "Do you want to use a point that is already created? (1 for yes/0 for no): ";
                 std::cin >> createdPoint;
@@ -1814,7 +1820,7 @@ void usersInput(fstream& fileToWriteLinesIn, fstream& fileToWritePointsIn, fstre
         }
 
         else if (answer == "interPar") {
-            bool exit;
+            int exit;
             std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
             std::cin >> exit;
 
@@ -1830,7 +1836,7 @@ void usersInput(fstream& fileToWriteLinesIn, fstream& fileToWritePointsIn, fstre
                 std::cin >> a;
             }
 
-            bool createdLine;
+            int createdLine;
             double aL, bL;
 
             if (actualSizeLines > 0) {
@@ -1863,7 +1869,7 @@ void usersInput(fstream& fileToWriteLinesIn, fstream& fileToWritePointsIn, fstre
         }
 
         else if (answer == "tetr") {
-            bool exit;
+            int exit;
             std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
             std::cin >> exit;
 
@@ -1899,7 +1905,7 @@ void usersInput(fstream& fileToWriteLinesIn, fstream& fileToWritePointsIn, fstre
         }
 
         else if (answer == "0") {
-            bool exit;
+            int exit;
             std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
             std::cin >> exit;
 
@@ -1965,5 +1971,8 @@ int main()
         MyFileLines.close();
         MyFilePoints.close();
         MyFileParabolas.close();
-    } 
+    }
+
+    
 }
+
