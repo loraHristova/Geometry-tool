@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <sstream>
 using namespace std;
 
 const int MAX = 1000000;
@@ -33,11 +34,10 @@ struct Parabola {
     double a;
     double b;
     double c;
-    string name;
     long long id;
 
     Parabola() : Parabola(0, 0, 0) {}
-    Parabola(double _a, double _b, double _c, string _name = "-") : a(_a), b(_b), c(_c), name(_name) {}
+    Parabola(double _a, double _b, double _c) : a(_a), b(_b), c(_c) {}
 };
 
 vector<Line> lines(MAX);
@@ -47,13 +47,40 @@ long long actualSizePoints = 0;
 vector<Parabola> parabolas(MAX);
 long long actualSizeParabolas = 0;
 
+bool isLineInArchive(double a, double b) {
+    for (long long i = 0; i < actualSizeLines; i++) {
+        if (lines[i].a == a && lines[i].b == b)
+            return true;
+    }
+
+    return false;
+}
+
+bool isPointInArchive(double x, double y) {
+    for (long long i = 0; i < actualSizePoints; i++) {
+        if (points[i].x == x && points[i].y == y)
+            return true;
+    }
+
+    return false;
+}
+
+bool isParabolaInArchive(double a, double b, double c) {
+    for (long long i = 0; i < actualSizeParabolas; i++) {
+        if (parabolas[i].a == a && parabolas[i].b == b && parabolas[i].c == c)
+            return true;
+    }
+
+    return false;
+}
+
 void inputLine(double a, double b) {
     Line line(a, b);
     lines[actualSizeLines] = (line);
     actualSizeLines++;
     lines[actualSizeLines - 1].id = actualSizeLines - 1;
 
-    std::cout << endl << "Your line " << "y = " << a << "x ";
+    std::cout << endl << "Your line " << a << "x ";
 
     if (b >= 0)
         std::cout << "+ ";
@@ -110,27 +137,6 @@ void setNameToPoint(long long index, const string& _name) {
         std::cout << endl << "This is an invalid ID, no such point exists!" << std::endl;
 }
 
-void setNameToParabola(long long index, const string& _name) {
-    if (index < actualSizeParabolas) {
-        parabolas[index].name = _name;
-        std::cout << endl << "The name: " << parabolas[index].name << " to parabola " << parabolas[index].a << "x^2 ";
-
-        if (parabolas[index].b >= 0)
-            std::cout << "+ ";
-
-        std::cout << parabolas[index].b << "x ";
-
-        if (parabolas[index].c >= 0)
-            std::cout << "+ ";
-
-        std::cout << parabolas[index].c << " was set successfully!" << endl;
-    }
-
-    else
-        std::cout << endl << "This is an invalid ID, no such parabola exists!" << std::endl;
-
-}
-
 bool isPointOnParabola(double a, double b, double c, double x, double y) {
     return ((a * x * x) + (b * x) + c) == y;
 }
@@ -176,17 +182,24 @@ bool verifyInputDataName(const string& name) {
     return true;
 }
 
-void saveLinesToFile(ofstream& fileToWriteLinesIn) {
+void saveLinesToFile(fstream& fileToWriteLinesIn) {
     for (int i = 0; i < actualSizeLines; i++) {
         fileToWriteLinesIn << lines[i].id << " " << lines[i].a << " " << lines[i].b << " " << lines[i].name << '\n';
         fileToWriteLinesIn.flush();
     }
 }
 
-void savePointsToFile(ofstream& fileToWritePointsIn) {
+void savePointsToFile(fstream& fileToWritePointsIn) {
     for (int i = 0; i < actualSizePoints; i++) {
         fileToWritePointsIn << points[i].id << " " << points[i].x << " " << points[i].y << " " << points[i].name << '\n';
         fileToWritePointsIn.flush();
+    }
+}
+
+void saveParabolasToFile(fstream& fileToWriteParabolasIn) {
+    for (int i = 0; i < actualSizeParabolas; i++) {
+        fileToWriteParabolasIn << parabolas[i].id << " " << parabolas[i].a << " " << parabolas[i].b << " " << parabolas[i].c << '\n';
+        fileToWriteParabolasIn.flush();
     }
 }
 
@@ -203,8 +216,13 @@ bool isPointOnLine(double x, double y, double coefLine, double bLine) {
 
 void askToSaveLine(double a, double b) {
     bool save;
-    std::cout << endl << "Do you wish to save this line? (1 for yes/0 for no): ";
-    std::cin >> save;
+
+    if (!isLineInArchive(a, b)) {
+        std::cout << endl << "Do you wish to save this line? (1 for yes/0 for no): ";
+        std::cin >> save;
+    }
+    else
+        save = 0;
 
     if (save)
         inputLine(a, b);
@@ -212,14 +230,33 @@ void askToSaveLine(double a, double b) {
 
 void askToSavePoint(double x, double y) {
     bool save;
-    std::cout << endl << "Do you wish to save this point? (1 for yes/0 for no): ";
-    std::cin >> save;
+
+    if (!isPointInArchive(x, y)) {
+        std::cout << endl << "Do you wish to save this point? (1 for yes/0 for no): ";
+        std::cin >> save;
+    }
+    else
+        save = 0;
 
     if (save)
         inputPoint(x, y);
 }
 
-bool createLineWithId(long long idOfLinePar, long long idOfPointThrough, ofstream& fileToWriteLinesIn) {
+void askToSaveParabola(double a, double b, double c){
+    bool save;
+
+    if (!isParabolaInArchive(a, b, c)) {
+        std::cout << endl << "Do you wish to save this parabola? (1 for yes/0 for no): ";
+        std::cin >> save;
+    }
+    else
+        save = 0;
+
+    if (save)
+        inputParabola(a, b, c);
+}
+
+bool createLineWithId(long long idOfLinePar, long long idOfPointThrough, fstream& fileToWriteLinesIn) {
     if (!isValidIdPoint(idOfPointThrough) || !isValidIdLine(idOfLinePar))
         return false;
 
@@ -237,7 +274,7 @@ bool createLineWithId(long long idOfLinePar, long long idOfPointThrough, ofstrea
     return true;
 }
 
-bool createLine(double coefOfLine, double bOfLine, double x, double y, ofstream& fileToWriteLinesIn) {
+bool createLine(double coefOfLine, double bOfLine, double x, double y, fstream& fileToWriteLinesIn) {
     double bOfNewLine = y - (coefOfLine * x);
 
     std::cout << endl << "The line parallel to the line y = " << coefOfLine << "x + " << bOfLine <<
@@ -249,7 +286,7 @@ bool createLine(double coefOfLine, double bOfLine, double x, double y, ofstream&
     return true;
 }
 
-bool createPerpLineWithId(long long idOfLine, long long idOfPoint, ostream& fileToWriteLinesIn) {
+bool createPerpLineWithId(long long idOfLine, long long idOfPoint, fstream& fileToWriteLinesIn) {
     if (!isValidIdPoint(idOfPoint) || !isValidIdLine(idOfLine))
         return false;
 
@@ -302,7 +339,7 @@ bool createPerpLineWithId(long long idOfLine, long long idOfPoint, ostream& file
     return true;
 }
 
-bool createPerpLine(double coefLine, double bLine, double x, double y, ostream& fileToWriteLinesIn) {
+bool createPerpLine(double coefLine, double bLine, double x, double y, fstream& fileToWriteLinesIn) {
     while (!isPointOnLine(x, y, coefLine, bLine)) {
         string answer;
         std::cout << endl << "The point (" << x << ", " << y << ") is NOT on the line y = " << coefLine << "x + " << bLine
@@ -687,15 +724,6 @@ void findSimetrals(double xFirst, double yFirst, double xSecond, double ySecond,
     std::cout << bOfNewST << "." << endl;
 }
 
-void askToSaveParabola(double a, double b, double c) {
-    bool save;
-    std::cout << endl << "Do you wish to save the parabola? (1 for yes/0 for no): ";
-    std::cin >> save;
-
-    if (save)
-        inputParabola(a, b, c);
-}
-
 void findTangential(double a, double b, double c, double x, double y) {
     while (!isPointOnParabola(a, b, c, x, y)) {
         std::cout << endl << "This point is not on the parabola, please choose a point that is! Enter new coordinates: ";
@@ -855,6 +883,66 @@ void determineTheTypeOfTetragon(double a1, double b1, double a2, double b2, doub
     }
 }
 
+void readFromFileLines(fstream& fileLines) {
+    std::stringstream ss;
+    char line[1024];
+
+    while (!fileLines.eof()) {
+        if (!fileLines.getline(line, 1024))
+            break;
+        ss << line;
+
+        if (!ss.str().empty()) {
+            ss >> lines[actualSizeLines].id;
+            ss >> lines[actualSizeLines].a;
+            ss >> lines[actualSizeLines].b;
+            ss >> lines[actualSizeLines].name;
+            actualSizeLines++;
+        }
+
+    }
+}
+
+void readFromFilePoints(fstream& filePoints) {
+    std::stringstream ss;
+    char line[1024];
+
+    while (!filePoints.eof()) {
+        if (!filePoints.getline(line, 1024))
+            break;
+        ss << line;
+
+        if (!ss.str().empty()) {
+            ss >> points[actualSizePoints].id;
+            ss >> points[actualSizePoints].x;
+            ss >> points[actualSizePoints].y;
+            ss >> points[actualSizePoints].name;
+            actualSizePoints++;
+        }
+
+    }
+}
+
+void readFromFileParabolas(fstream& fileParabolas) {
+    std::stringstream ss;
+    char line[1024];
+
+    while (!fileParabolas.eof()) {
+        if (!fileParabolas.getline(line, 1024))
+            break;
+        ss << line;
+
+        if (!ss.str().empty()) {
+            ss >> parabolas[actualSizeParabolas].id;
+            ss >> parabolas[actualSizeParabolas].a;
+            ss >> parabolas[actualSizeParabolas].b;
+            ss >> parabolas[actualSizeParabolas].c;
+            actualSizeParabolas++;
+        }
+
+    }
+}
+
 void printIsPointOnLineWithId(long long idPoint, long long idLine) {
     if (isPointOnLineWithId(idPoint, idLine)) {
         std::cout << "The point (" << points[idPoint].x << ", " << points[idPoint].y << ") is on the line y = " << lines[idLine].a << "x ";
@@ -909,8 +997,61 @@ void askReuse(bool& createdLine, bool& createdPoint) {
         createdPoint = 0;
 }
 
+void printAllPoints() {
+    if (!actualSizePoints)
+        std::cout << endl << "No saved points yet!";
 
-void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
+    for (int i = 0; i < actualSizePoints; i++) {
+        std::cout << endl << "Point with ID: " << points[i].id << " (" << points[i].x <<
+            ", " << points[i].y << ") and ";
+
+        if (points[i].name == "-")
+            std::cout << "no name";
+        else
+            std::cout << "Name: " << points[i].name;
+    }
+}
+
+void printAllLines() {
+    if (!actualSizeLines)
+        std::cout << endl << "So saved lines yet!";
+
+    for (int i = 0; i < actualSizeLines; i++) {
+        std::cout << endl << "Line with ID: " << lines[i].id << " y = " << lines[i].a << "x ";
+
+        if (lines[i].b >= 0)
+            std::cout << "+ ";
+
+        std::cout << lines[i].b;
+
+        if (lines[i].name == "-")
+            std::cout << " no name";
+        else
+            std::cout << " Name: " << lines[i].name;
+    }
+}
+
+void printAllParabolas() {
+    if (!actualSizeParabolas)
+        std::cout << endl << "No saved parabolas yet!";
+
+    for (int i = 0; i < actualSizeParabolas; i++) {
+        std::cout << endl << "Parabola with ID: " << parabolas[i].id << " 0 = " << parabolas[i].a << "x ";
+
+        if (parabolas[i].b >= 0)
+            std::cout << "+ ";
+
+        std::cout << parabolas[i].b;
+
+        if (parabolas[i].c >= 0)
+            std::cout << "+ ";
+
+        std::cout << parabolas[i].c;
+    }
+}
+
+
+void usersInput(fstream& fileToWriteLinesIn, fstream& fileToWritePointsIn, fstream& fileToWriteParabolasIn) {
     bool toBeStopped = false;
     string answer;
 
@@ -928,6 +1069,9 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
             "Find the tangential of a parabola and a point. (tan)" << endl << 
             "Find interception points between parabola and a line. (interPar)" << endl <<
             "Find the type of tetragon by 4 lines. (tetr)" << endl <<
+            "See a list of all saved points. (lp)" << endl << 
+            "See a list of all saved lines. (ll)" << endl <<
+            "See a list of all saved parabolas. (lpar)" << endl <<
             "Enter 0 to terminate program," << endl <<
             "Enter your choice: ";
         std::cin >> answer;
@@ -1742,6 +1886,18 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
             determineTheTypeOfTetragon(a1, b1, a2, b2, a3, b3, a4, b4);
         }
 
+        else if (answer == "lp") {
+            printAllPoints();
+        }
+
+        else if (answer == "ll"){
+            printAllLines();
+        }
+
+        else if (answer == "lpar") {
+            printAllParabolas();
+        }
+
         else if (answer == "0") {
             bool exit;
             std::cout << endl << "Do you want to go back to the main menu? (1 for yes/0 for no): ";
@@ -1753,6 +1909,7 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
             toBeStopped = true;
             saveLinesToFile(fileToWriteLinesIn);
             savePointsToFile(fileToWritePointsIn);
+            saveParabolasToFile(fileToWriteParabolasIn);
         }
        
         else
@@ -1762,19 +1919,51 @@ void usersInput(ofstream& fileToWriteLinesIn, ofstream& fileToWritePointsIn) {
 
 int main()
 {
-    ofstream MyFileLines("GeometryToolLines.txt", std::ofstream::app);
-    ofstream MyFilePoints("GeometryToolPoints.txt", std::ofstream::app);
+    bool use;
+    std::cout << endl << "Do you wish to reuse your previous saved points, lines and parabolas (1 for yes/ 0 for no): ";
+    std::cin >> use;
 
-    if (!MyFileLines.is_open() || !MyFilePoints.is_open()) {
-        std::cout << "Couldn't open one of the files!";
+    if (use) {
+        fstream MyFileLines("GeometryToolLines.txt", std::ios::in | std::ios::out | std::ios::app);
+        fstream MyFilePoints("GeometryToolPoints.txt", std::ios::in | std::ios::out | std::ios::app);
+        fstream MyFileParabolas("GeometryToolParabolas.txt", std::ios::in | std::ios::out | std::ios::app);
+
+        
+
+        if (!MyFileLines.is_open() || !MyFilePoints.is_open() || !MyFileParabolas.is_open()) {
+            std::cout << "Couldn't open one of the files!";
+            MyFileLines.close();
+            MyFilePoints.close();
+            return 0;
+        }
+
+        readFromFileLines(MyFileLines);
+        readFromFileLines(MyFilePoints);
+        readFromFileLines(MyFileParabolas);
+
+        usersInput(MyFileLines, MyFilePoints, MyFileParabolas);
+
         MyFileLines.close();
         MyFilePoints.close();
-        return 0;
     }
+    else {
+        fstream MyFileLines("GeometryToolLines.txt", std::ios::in | std::ios::out | std::ios::trunc);
+        fstream MyFilePoints("GeometryToolPoints.txt", std::ios::in | std::ios::out | std::ios::trunc);
+        fstream MyFileParabolas("GeometryToolParabolas.txt", std::ios::in | std::ios::out | std::ios::trunc);
 
-    usersInput(MyFileLines, MyFilePoints);
-    
-    MyFileLines.close();
-    MyFilePoints.close();
+
+
+        if (!MyFileLines.is_open() || !MyFilePoints.is_open() || !MyFileParabolas.is_open()) {
+            std::cout << "Couldn't open one of the files!";
+            MyFileLines.close();
+            MyFilePoints.close();
+            return 0;
+        }
+
+        usersInput(MyFileLines, MyFilePoints, MyFileParabolas);
+
+        MyFileLines.close();
+        MyFilePoints.close();
+        MyFileParabolas.close();
+    } 
 }
-
