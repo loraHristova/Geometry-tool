@@ -884,10 +884,11 @@ void determineTheTypeOfTetragon(double a1, double b1, double a2, double b2, doub
 }
 
 void readFromFileLines(fstream& fileLines) {
-    std::stringstream ss;
     char line[1024];
 
     while (!fileLines.eof()) {
+        std::stringstream ss;
+
         if (!fileLines.getline(line, 1024))
             break;
         ss << line;
@@ -898,16 +899,17 @@ void readFromFileLines(fstream& fileLines) {
             ss >> lines[actualSizeLines].b;
             ss >> lines[actualSizeLines].name;
             actualSizeLines++;
+
         }
 
     }
 }
 
 void readFromFilePoints(fstream& filePoints) {
-    std::stringstream ss;
     char line[1024];
 
     while (!filePoints.eof()) {
+        std::stringstream ss;
         if (!filePoints.getline(line, 1024))
             break;
         ss << line;
@@ -924,10 +926,10 @@ void readFromFilePoints(fstream& filePoints) {
 }
 
 void readFromFileParabolas(fstream& fileParabolas) {
-    std::stringstream ss;
     char line[1024];
 
     while (!fileParabolas.eof()) {
+        std::stringstream ss;
         if (!fileParabolas.getline(line, 1024))
             break;
         ss << line;
@@ -1925,7 +1927,7 @@ void usersInput(fstream& fileToWriteLinesIn, fstream& fileToWritePointsIn, fstre
 
 int main()
 {
-    bool use;
+    int use;
     std::cout << endl << "Do you wish to reuse your previous saved points, lines and parabolas (1 for yes/ 0 for no): ";
     std::cin >> use;
 
@@ -1944,13 +1946,14 @@ int main()
         }
 
         readFromFileLines(MyFileLines);
-        readFromFileLines(MyFilePoints);
-        readFromFileLines(MyFileParabolas);
+        readFromFilePoints(MyFilePoints);
+        readFromFileParabolas(MyFileParabolas);
 
         usersInput(MyFileLines, MyFilePoints, MyFileParabolas);
 
         MyFileLines.close();
         MyFilePoints.close();
+        MyFileParabolas.close();
     }
     else {
         fstream MyFileLines("GeometryToolLines.txt", std::ios::in | std::ios::out | std::ios::trunc);
@@ -1971,8 +1974,5 @@ int main()
         MyFileLines.close();
         MyFilePoints.close();
         MyFileParabolas.close();
-    }
-
-    
+    }   
 }
-
